@@ -1,6 +1,4 @@
 # template_api
-(texto generado por ChatGPT al explicarle mi API)
-
 API Template: Un template de API con Node, Express, TypeScript, MongoDB y JWT para agilizar mi desarrollo de futuros proyectos.
 
 Este repositorio contiene una plantilla lista para usar que te brinda la base necesaria para crear una API segura y escalable. Incluye la implementación de funcionalidades comunes, como la creación de cuentas, inicio de sesión y la protección de rutas mediante JSON Web Tokens (JWT). La estructura del proyecto está diseñada para ser fácilmente entendible y extensible.
