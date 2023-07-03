@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/user";
-import bcrypt from "bcrypt";
+import { encrypt, verified } from "../helpers/bcrypt.handle";
+import { generateToken } from "../helpers/jwt.handle";
 
 const authController = {
   async register(req: Request, res: Response) {
@@ -26,10 +27,11 @@ const authController = {
 
         //Si pasa los anteriores checks, se registra el usuario
       } else {
+        const passHash = await encrypt(req.body.password);
         const newUser = new User({
           username: req.body.username,
           email: req.body.email,
-          password: req.body.password,
+          password: passHash,
         });
         await newUser.save();
 
@@ -59,13 +61,10 @@ const authController = {
 
       try {
         /// Verificar la contraseña del usuario
-        const passwordMatch = await bcrypt.compare(
-          req.body.password,
-          user.password
-        );
+        const passCheck = await verified(req.body.password, user.password); // Comparo la contraseña plana, con la encriptada en la BD
 
-        // Si la contraseña no coincide, devolver un error de autenticación
-        if (passwordMatch === false) {
+        // Si las contraseñas no coinciden, devuelvo un error de autenticación
+        if (passCheck === false) {
           return res.status(401).json({ error: "Contraseña incorrecta" });
         }
       } catch (error) {
@@ -74,7 +73,13 @@ const authController = {
       }
 
       // Si las credenciales son válidas, iniciar sesión correctamente
-      res.status(200).json({ message: "Sesión iniciada correctamente" });
+      const token = await generateToken(user.username);
+      const data = {
+        token,
+        user: user,
+        message: "Sesión iniciada correctamente",
+      };
+      res.json(data);
     } catch (error) {
       //Si algo sale mal en la petición, devuelve un error
       return res.status(500).json({ error: "Error de servidor" });
