@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 
-export const connectDb = () => {
+export const connectDb = async (): Promise<void> => {
+  const DB_URI = <string>process.env.MONGODB_URI;
+
   mongoose
-    .connect(`${process.env.MONGODB_URI}`)
+    .connect(DB_URI)
     .then(() => {
       console.log("Conectado a MongoDB");
     })
