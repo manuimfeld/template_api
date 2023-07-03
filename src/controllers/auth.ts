@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../models/user";
+import bcrypt from "bcrypt";
 
 const authController = {
   async register(req: Request, res: Response) {
@@ -56,12 +57,20 @@ const authController = {
           .json({ error: "Nombre de usuario o correo electrónico incorrecto" });
       }
 
-      /// Verificar la contraseña del usuario
-      const passwordMatch = req.body.password === user.password;
+      try {
+        /// Verificar la contraseña del usuario
+        const passwordMatch = await bcrypt.compare(
+          req.body.password,
+          user.password
+        );
 
-      // Si la contraseña no coincide, devolver un error de autenticación
-      if (passwordMatch === false) {
-        return res.status(401).json({ error: "Contraseña incorrecta" });
+        // Si la contraseña no coincide, devolver un error de autenticación
+        if (passwordMatch === false) {
+          return res.status(401).json({ error: "Contraseña incorrecta" });
+        }
+      } catch (error) {
+        console.error("Error al comparar las contraseñas:", error);
+        return res.status(500).json({ error: "Error de servidor" });
       }
 
       // Si las credenciales son válidas, iniciar sesión correctamente
